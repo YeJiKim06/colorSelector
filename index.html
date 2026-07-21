@@ -151,13 +151,13 @@
             background: var(--bg-color);
         }
 
-        /* 크롬 개발자 도구 Dark Theme 스타일 피커 Popover */
+        /* 개발자 도구 메인 피커 Popover */
         .dev-picker-popover {
             position: absolute;
             top: 68px;
             left: 0;
             z-index: 50;
-            width: 260px;
+            width: 270px;
             padding: 12px;
             background: #242424;
             border-radius: 16px;
@@ -244,7 +244,11 @@
             cursor: pointer;
         }
 
-        /* 피커 내 포맷 표시 및 변환 컨트롤 */
+        /* 피커 하단 포맷 표시 컨트롤 영역 */
+        .format-control-wrapper {
+            position: relative;
+        }
+
         .format-controller-box {
             display: flex;
             align-items: center;
@@ -278,10 +282,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 4px;
         }
 
         .format-switch-btn:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             color: #ffffff;
             transform: none;
             box-shadow: none;
@@ -292,8 +297,51 @@
             font-size: 0.68rem;
             color: #6b7280;
             font-weight: 800;
-            margin-top: -6px;
+            margin-top: 4px;
             letter-spacing: 0.05em;
+        }
+
+        /* 개발자 도구 스타일 포맷 선택 드롭다운 팝업 메뉴 */
+        .format-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 6px;
+            width: 180px;
+            background: #1e1e1e;
+            border: 1px solid #3d3d3d;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            padding: 6px 0;
+            z-index: 60;
+        }
+
+        .format-dropdown-menu.active {
+            display: flex;
+        }
+
+        .format-option-item {
+            padding: 8px 12px;
+            font-size: 0.78rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: #d1d5db;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s ease;
+        }
+
+        .format-option-item:hover {
+            background: #2d2d2d;
+            color: #ffffff;
+        }
+
+        .format-option-item.selected {
+            color: #3b82f6;
+            font-weight: bold;
         }
 
         input[type="number"] {
@@ -353,7 +401,6 @@
             border-color: #6366f1;
         }
 
-        /* 또렷한 선명도를 보장하는 색상칩 테두리 */
         .swatch {
             height: 110px;
             border-radius: 16px;
@@ -445,8 +492,8 @@
                 <div class="eyebrow">SMART PALETTE</div>
                 <h1>Color Palette</h1>
                 <p class="description">
-                    기준 색상을 선택하고 피커 내 화살표(↕) 버튼을 통해 포맷을 변경해 보세요.
-                    색상 카드를 클릭하면 선택된 포맷의 코드가 복사됩니다.
+                    기준 색상을 선택하고 피커 하단의 ↕ 버튼을 통해 포맷 드롭다운 메뉴를 열어보세요.
+                    선택한 포맷에 따라 색상 카드의 값이 실시간으로 변경됩니다.
                 </p>
             </div>
 
@@ -472,12 +519,22 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div class="format-control-wrapper">
                         <div class="format-controller-box">
-                            <input type="text" class="format-value-input" id="formatValueInput" readonly />
-                            <button type="button" class="format-switch-btn" id="formatSwitchBtn" title="포맷 전환">↕</button>
+                            <input type="text" class="format-value-input" id="formatValueInput" />
+                            <button type="button" class="format-switch-btn" id="formatSwitchBtn" title="포맷 선택 메뉴 열기">↕</button>
                         </div>
                         <div class="format-label-sub" id="formatLabelSub">HEX</div>
+
+                        <!-- 개발자 도구 스타일 포맷 드롭다운 팝업 -->
+                        <div class="format-dropdown-menu" id="formatDropdownMenu">
+                            <div class="format-option-item selected" data-format="HEX">HEX</div>
+                            <div class="format-option-item" data-format="RGB">RGB</div>
+                            <div class="format-option-item" data-format="HSL">HSL</div>
+                            <div class="format-option-item" data-format="HWB">HWB</div>
+                            <div class="format-option-item" data-format="LCH">LCH</div>
+                            <div class="format-option-item" data-format="OKLCH">OKLCH</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -500,9 +557,7 @@
     <div id="toast">복사되었습니다 🎉</div>
 
     <script>
-        // 지원 포맷 리스트
-        const formats = ["HEX", "RGBA", "HSL"];
-        let currentFormatIndex = 0;
+        let currentFormat = "HEX";
 
         // 글로벌 색상 상태 관리 (HSLA 기준)
         let currentH = 0;
@@ -519,24 +574,47 @@
         const alphaSlider = document.getElementById("alphaSlider");
         const formatValueInput = document.getElementById("formatValueInput");
         const formatSwitchBtn = document.getElementById("formatSwitchBtn");
+        const formatDropdownMenu = document.getElementById("formatDropdownMenu");
         const formatLabelSub = document.getElementById("formatLabelSub");
         const colorCountInput = document.getElementById("colorCount");
         const paletteContainer = document.getElementById("palette");
         const previewOrb = document.getElementById("previewOrb");
 
-        // 팝오버 토글
+        // 메인 피커 팝오버 토글
         pickerTrigger.addEventListener("click", (e) => {
             e.stopPropagation();
             pickerPopover.classList.toggle("active");
+            formatDropdownMenu.classList.remove("active");
         });
 
         document.addEventListener("click", (e) => {
             if (!pickerPopover.contains(e.target) && e.target !== pickerTrigger) {
                 pickerPopover.classList.remove("active");
+                formatDropdownMenu.classList.remove("active");
             }
         });
 
-        // 스펙트럼 마우스 조작
+        // ↕ 버튼 클릭 시 포맷 선택 드롭다운 토글
+        formatSwitchBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            formatDropdownMenu.classList.toggle("active");
+        });
+
+        // 드롭다운 옵션 클릭 이벤트
+        document.querySelectorAll(".format-option-item").forEach(item => {
+            item.addEventListener("click", (e) => {
+                e.stopPropagation();
+                currentFormat = item.getAttribute("data-format");
+                
+                document.querySelectorAll(".format-option-item").forEach(opt => opt.classList.remove("selected"));
+                item.classList.add("selected");
+
+                formatDropdownMenu.classList.remove("active");
+                generatePalette();
+            });
+        });
+
+        // 스펙트럼 마우스 드래그 조작
         let isDraggingSpectrum = false;
 
         function updateSpectrumFromMouse(e) {
@@ -591,15 +669,9 @@
             generatePalette();
         });
 
-        // 피커 내부 포맷 순환 전환 버튼 (↕)
-        formatSwitchBtn.addEventListener("click", () => {
-            currentFormatIndex = (currentFormatIndex + 1) % formats.length;
-            generatePalette();
-        });
-
         colorCountInput.addEventListener("input", generatePalette);
 
-        // 색상 포맷 변환 유틸리티
+        // 다양한 색상 포맷 변환 함수
         function hslToRgb(h, s, l) {
             s /= 100;
             l /= 100;
@@ -629,14 +701,24 @@
         function formatColorString(h, s, l, a, formatName) {
             const { r, g, b } = hslToRgb(h, s, l);
 
-            if (formatName === "RGBA") {
-                return `rgba(${r}, ${g}, ${b}, ${a})`;
-            } else if (formatName === "HSL") {
-                return a < 1 
-                    ? `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${a})` 
-                    : `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
-            } else {
-                return rgbToHex(r, g, b);
+            switch (formatName) {
+                case "RGB":
+                    return a < 1 ? `rgba(${r}, ${g}, ${b}, ${a})` : `rgb(${r}, ${g}, ${b})`;
+                case "HSL":
+                    return a < 1 
+                        ? `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${a})` 
+                        : `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+                case "HWB":
+                    const w = Math.round((1 - s / 100) * (l / 100) * 100);
+                    const bk = Math.round((1 - l / 100) * 100);
+                    return `hwb(${Math.round(h)}deg ${w}% ${bk}%)`;
+                case "LCH":
+                    return `lch(${Math.round(l)}% ${Math.round(s * 0.8)} ${Math.round(h)})`;
+                case "OKLCH":
+                    return `oklch(${(l / 100).toFixed(2)} ${(s / 250).toFixed(2)} ${Math.round(h)})`;
+                case "HEX":
+                default:
+                    return rgbToHex(r, g, b);
             }
         }
 
@@ -655,14 +737,13 @@
 
         function generatePalette() {
             const count = Math.min(Math.max(Number(colorCountInput.value || 1), 1), 10);
-            const currentFormat = formats[currentFormatIndex];
 
             paletteContainer.innerHTML = "";
 
             const baseRgb = hslToRgb(currentH, currentS, currentL);
             const baseCssColor = `rgba(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}, ${currentA})`;
 
-            // 피커 내부 포맷 UI 업데이트
+            // 피커 포맷 및 값 업데이트
             formatValueInput.value = formatColorString(currentH, currentS, currentL, currentA, currentFormat);
             formatLabelSub.textContent = currentFormat;
 
@@ -671,7 +752,6 @@
             pickerTrigger.style.background = baseCssColor;
             currentColorCircle.style.background = baseCssColor;
 
-            // 슬라이더 투명도 트랙 색상 맞춤
             alphaSlider.style.background = `linear-gradient(to right, transparent, rgb(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}))`;
 
             for (let i = 0; i < count; i++) {
