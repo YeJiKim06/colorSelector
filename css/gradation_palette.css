@@ -1,7 +1,5 @@
 :root {
-    --color-start: #6366f1;
-    --color-end: #a855f7;
-    --gradient-bg: linear-gradient(135deg, var(--color-start), var(--color-end));
+    --gradient-bg: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
     --card-bg: rgba(255, 255, 255, 0.88);
     --card-border: rgba(255, 255, 255, 0.5);
     --shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
@@ -39,7 +37,7 @@ body::before {
 
 .container {
     position: relative;
-    width: min(100%, 820px);
+    width: min(100%, 860px);
     padding: 30px;
     border-radius: 34px;
     background: var(--card-bg);
@@ -80,7 +78,7 @@ h1 {
 
 .main-gradient-preview {
     width: 100%;
-    height: 100px;
+    height: 120px;
     border-radius: 20px;
     background: var(--gradient-bg);
     margin-bottom: 24px;
@@ -94,12 +92,12 @@ h1 {
     transform: scale(1.01);
 }
 
-.controls {
+.controls-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    margin-bottom: 26px;
-    padding: 14px;
+    margin-bottom: 20px;
+    padding: 16px;
     border-radius: 24px;
     background: rgba(248, 250, 252, 0.86);
     border: 1px solid rgba(226, 232, 240, 0.9);
@@ -117,11 +115,39 @@ h1 {
     border: 1px solid #e2e8f0;
 }
 
+.input-group.full-width {
+    grid-column: 1 / -1;
+}
+
 .input-group label {
     font-size: 0.82rem;
     font-weight: 800;
     color: #475569;
     white-space: nowrap;
+}
+
+.input-controls-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+select {
+    border: 0;
+    outline: 0;
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #111827;
+    cursor: pointer;
+}
+
+.unit-label {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #64748b;
 }
 
 input[type="color"] {
@@ -140,21 +166,32 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 input[type="number"] {
-    width: 50px;
+    width: 54px;
     border: 0;
     outline: 0;
     background: #f1f5f9;
     border-radius: 12px;
-    padding: 10px 4px;
+    padding: 8px 4px;
     text-align: center;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 900;
     color: #111827;
 }
 
-button {
-    min-height: 58px;
-    padding: 0 20px;
+input[type="range"] {
+    width: 100px;
+    cursor: pointer;
+}
+
+.action-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+}
+
+.btn-generate {
+    min-height: 52px;
+    padding: 0 24px;
     border: 0;
     border-radius: 18px;
     background: #111827;
@@ -164,10 +201,9 @@ button {
     cursor: pointer;
     box-shadow: 0 14px 30px rgba(15, 23, 42, 0.22);
     transition: transform 0.2s ease, background 0.2s ease;
-    white-space: nowrap;
 }
 
-button:hover {
+.btn-generate:hover {
     transform: translateY(-2px);
     background: #020617;
 }
@@ -259,7 +295,7 @@ button:hover {
 }
 
 @media (max-width: 768px) {
-    .controls {
+    .controls-grid {
         grid-template-columns: 1fr;
     }
 }
