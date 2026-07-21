@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Color Palette Generator</title>
+
+    <style>
+        :root {
+            --bg-color: #450a0a;
+            --text-color: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --card-border: rgba(255, 255, 255, 0.5);
+            --shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text-color);
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.32), transparent 32%),
+                radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.22), transparent 36%),
+                linear-gradient(135deg, var(--bg-color), #111827);
+            transition: background 0.45s ease, color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 18px;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            width: min(100%, 800px);
+            padding: 30px;
+            border-radius: 34px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(22px);
+            color: #111827;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            margin-bottom: 26px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(99, 102, 241, 0.1);
+            color: #4f46e5;
+            font-size: 0.78rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            line-height: 1.05;
+            letter-spacing: -0.06em;
+        }
+
+        .description {
+            margin: 12px 0 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.55;
+        }
+
+        .preview-orb {
+            flex: 0 0 auto;
+            width: 96px;
+            height: 96px;
+            border-radius: 30px;
+            background: var(--bg-color);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24);
+            border: 2px solid #ffffff;
+            transform: rotate(6deg);
+            transition: background 0.35s ease, transform 0.25s ease;
+        }
+
+        .preview-orb:hover {
+            transform: rotate(0deg) scale(1.04);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 26px;
+            padding: 14px;
+            border-radius: 24px;
+            background: rgba(248, 250, 252, 0.86);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 58px;
+            padding: 10px 14px;
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .input-group label {
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .color-picker-trigger {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+            cursor: pointer;
+            background: var(--bg-color);
+        }
+
+        /* 개발자 도구 메인 피커 Popover */
+        .dev-picker-popover {
+            position: absolute;
+            top: 68px;
+            left: 0;
+            z-index: 50;
+            width: 270px;
+            padding: 12px;
+            background: #242424;
+            border-radius: 16px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+            border: 1px solid #383838;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            color: #d1d5db;
+        }
+
+        .dev-picker-popover.active {
+            display: flex;
+        }
+
+        .spectrum-box {
+            position: relative;
+            width: 100%;
+            height: 140px;
+            border-radius: 8px;
+            background: linear-gradient(to top, #000, transparent),
+                        linear-gradient(to right, #fff, rgba(255,0,0,0));
+            background-color: #ff0000;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+
+        .spectrum-cursor {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 3px rgba(0,0,0,0.8);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .sliders-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-color-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            background: var(--bg-color);
+        }
+
+        .sliders-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .picker-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .hue-slider {
+            background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+        }
+
+        .alpha-slider {
+            background: linear-gradient(to right, transparent, #ff0000);
+        }
+
+        .picker-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        /* 피커 하단 포맷 표시 컨트롤 영역 */
+        .format-control-wrapper {
+            position: relative;
+        }
+
+        .format-controller-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #1a1a1a;
+            border: 1px solid #3d3d3d;
+            border-radius: 8px;
+            padding: 4px 8px;
+        }
+
+        .format-value-input {
+            width: 100%;
+            background: transparent;
+            border: 0;
+            outline: 0;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            text-align: center;
+        }
+
+        .format-switch-btn {
+            background: transparent;
+            border: 0;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 2px 4px;
+            min-height: auto;
+            box-shadow: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .format-switch-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #ffffff;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .format-label-sub {
+            text-align: center;
+            font-size: 0.68rem;
+            color: #6b7280;
+            font-weight: 800;
+            margin-top: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        /* 개발자 도구 스타일 포맷 선택 드롭다운 팝업 메뉴 */
+        .format-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 6px;
+            width: 180px;
+            background: #1e1e1e;
+            border: 1px solid #3d3d3d;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            padding: 6px 0;
+            z-index: 60;
+        }
+
+        .format-dropdown-menu.active {
+            display: flex;
+        }
+
+        .format-option-item {
+            padding: 8px 12px;
+            font-size: 0.78rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: #d1d5db;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s ease;
+        }
+
+        .format-option-item:hover {
+            background: #2d2d2d;
+            color: #ffffff;
+        }
+
+        .format-option-item.selected {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 58px;
+            border: 0;
+            outline: 0;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 10px 6px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 900;
+            color: #111827;
+        }
+
+        button {
+            min-height: 58px;
+            padding: 0 20px;
+            border: 0;
+            border-radius: 18px;
+            background: #111827;
+            color: #ffffff;
+            font-size: 0.92rem;
+            font-weight: 850;
+            cursor: pointer;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.22);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: #020617;
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.28);
+        }
+
+        .palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 14px;
+        }
+
+        .color-card {
+            position: relative;
+            overflow: hidden;
+            padding: 12px;
+            border-radius: 24px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+
+        .color-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+            border-color: #6366f1;
+        }
+
+        .swatch {
+            height: 110px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .color-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tone-name {
+            font-size: 0.74rem;
+            font-weight: 900;
+            color: #64748b;
+        }
+
+        .hex-label {
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #0f172a;
+            font-size: 0.7rem;
+            font-weight: 800;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            letter-spacing: -0.02em;
+            word-break: break-all;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .hint {
+            margin-top: 18px;
+            color: #64748b;
+            font-size: 0.84rem;
+            text-align: center;
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 34px;
+            transform: translateX(-50%) translateY(16px);
+            min-width: 210px;
+            padding: 14px 18px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.92);
+            color: #ffffff;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 800;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.28);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+            backdrop-filter: blur(12px);
+            z-index: 100;
+        }
+
+        #toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 720px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+            }
+            .preview-orb {
+                width: 100%;
+                height: 80px;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <section class="header">
+            <div>
+                <div class="eyebrow">SMART PALETTE</div>
+                <h1>Color Palette</h1>
+                <p class="description">
+                    기준 색상을 선택하고 피커 하단의 ↕ 버튼을 통해 포맷 드롭다운 메뉴를 열어보세요.
+                    선택한 포맷에 따라 색상 카드의 값이 실시간으로 변경됩니다.
+                </p>
+            </div>
+
+            <div class="preview-orb" id="previewOrb"></div>
+        </section>
+
+        <section class="controls">
+            <div class="input-group">
+                <label>기준 색상</label>
+                <div class="color-picker-trigger" id="pickerTrigger"></div>
+                
+                <!-- 개발자 도구 스타일 피커 Popover -->
+                <div class="dev-picker-popover" id="pickerPopover">
+                    <div class="spectrum-box" id="spectrumBox">
+                        <div class="spectrum-cursor" id="spectrumCursor"></div>
+                    </div>
+                    
+                    <div class="sliders-row">
+                        <div class="current-color-circle" id="currentColorCircle"></div>
+                        <div class="sliders-column">
+                            <input type="range" min="0" max="360" value="0" class="picker-slider hue-slider" id="hueSlider" />
+                            <input type="range" min="0" max="1" step="0.01" value="1" class="picker-slider alpha-slider" id="alphaSlider" />
+                        </div>
+                    </div>
+
+                    <div class="format-control-wrapper">
+                        <div class="format-controller-box">
+                            <input type="text" class="format-value-input" id="formatValueInput" />
+                            <button type="button" class="format-switch-btn" id="formatSwitchBtn" title="포맷 선택 메뉴 열기">↕</button>
+                        </div>
+                        <div class="format-label-sub" id="formatLabelSub">HEX</div>
+
+                        <!-- 개발자 도구 스타일 포맷 드롭다운 팝업 -->
+                        <div class="format-dropdown-menu" id="formatDropdownMenu">
+                            <div class="format-option-item selected" data-format="HEX">HEX</div>
+                            <div class="format-option-item" data-format="RGB">RGB</div>
+                            <div class="format-option-item" data-format="HSL">HSL</div>
+                            <div class="format-option-item" data-format="HWB">HWB</div>
+                            <div class="format-option-item" data-format="LCH">LCH</div>
+                            <div class="format-option-item" data-format="OKLCH">OKLCH</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="colorCount">추출 개수</label>
+                <input type="number" id="colorCount" value="5" min="1" max="10" />
+            </div>
+
+            <button type="button" onclick="randomizeAndGenerate()">
+                랜덤 생성
+            </button>
+        </section>
+
+        <section class="palette" id="palette"></section>
+
+        <p class="hint">색상 카드를 클릭하면 설정된 포맷으로 클립보드에 복사됩니다.</p>
+    </main>
+
+    <div id="toast">복사되었습니다 🎉</div>
+
+    <script>
+        let currentFormat = "HEX";
+
+        // 글로벌 색상 상태 관리 (HSLA 기준)
+        let currentH = 0;
+        let currentS = 77;
+        let currentL = 16;
+        let currentA = 1;
+
+        const pickerTrigger = document.getElementById("pickerTrigger");
+        const pickerPopover = document.getElementById("pickerPopover");
+        const spectrumBox = document.getElementById("spectrumBox");
+        const spectrumCursor = document.getElementById("spectrumCursor");
+        const currentColorCircle = document.getElementById("currentColorCircle");
+        const hueSlider = document.getElementById("hueSlider");
+        const alphaSlider = document.getElementById("alphaSlider");
+        const formatValueInput = document.getElementById("formatValueInput");
+        const formatSwitchBtn = document.getElementById("formatSwitchBtn");
+        const formatDropdownMenu = document.getElementById("formatDropdownMenu");
+        const formatLabelSub = document.getElementById("formatLabelSub");
+        const colorCountInput = document.getElementById("colorCount");
+        const paletteContainer = document.getElementById("palette");
+        const previewOrb = document.getElementById("previewOrb");
+
+        // 메인 피커 팝오버 토글
+        pickerTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            pickerPopover.classList.toggle("active");
+            formatDropdownMenu.classList.remove("active");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!pickerPopover.contains(e.target) && e.target !== pickerTrigger) {
+                pickerPopover.classList.remove("active");
+                formatDropdownMenu.classList.remove("active");
+            }
+        });
+
+        // ↕ 버튼 클릭 시 포맷 선택 드롭다운 토글
+        formatSwitchBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            formatDropdownMenu.classList.toggle("active");
+        });
+
+        // 드롭다운 옵션 클릭 이벤트
+        document.querySelectorAll(".format-option-item").forEach(item => {
+            item.addEventListener("click", (e) => {
+                e.stopPropagation();
+                currentFormat = item.getAttribute("data-format");
+                
+                document.querySelectorAll(".format-option-item").forEach(opt => opt.classList.remove("selected"));
+                item.classList.add("selected");
+
+                formatDropdownMenu.classList.remove("active");
+                generatePalette();
+            });
+        });
+
+        // 스펙트럼 마우스 드래그 조작
+        let isDraggingSpectrum = false;
+
+        function updateSpectrumFromMouse(e) {
+            const rect = spectrumBox.getBoundingClientRect();
+            let x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+            let y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+
+            let s = Math.round((x / rect.width) * 100);
+            const v = 100 - (y / rect.height) * 100;
+
+            const l = (2 - s / 100) * (v / 100) / 2;
+            if (l !== 0) {
+                if (l === 1) {
+                    s = 0;
+                } else if (l < 0.5) {
+                    s = (s / 100 * v / 100) / (l * 2) * 100;
+                } else {
+                    s = (s / 100 * v / 100) / (2 - l * 2) * 100;
+                }
+            }
+            currentS = Math.round(s);
+            currentL = Math.round(l * 100);
+
+            spectrumCursor.style.left = `${x}px`;
+            spectrumCursor.style.top = `${y}px`;
+
+            generatePalette();
+        }
+
+        spectrumBox.addEventListener("mousedown", (e) => {
+            isDraggingSpectrum = true;
+            updateSpectrumFromMouse(e);
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (isDraggingSpectrum) updateSpectrumFromMouse(e);
+        });
+
+        window.addEventListener("mouseup", () => {
+            isDraggingSpectrum = false;
+        });
+
+        // 슬라이더 조작
+        hueSlider.addEventListener("input", (e) => {
+            currentH = parseFloat(e.target.value);
+            spectrumBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
+            generatePalette();
+        });
+
+        alphaSlider.addEventListener("input", (e) => {
+            currentA = parseFloat(e.target.value);
+            generatePalette();
+        });
+
+        colorCountInput.addEventListener("input", generatePalette);
+
+        // 다양한 색상 포맷 변환 함수
+        function hslToRgb(h, s, l) {
+            s /= 100;
+            l /= 100;
+            const c = (1 - Math.abs(2 * l - 1)) * s;
+            const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+            const m = l - c / 2;
+            let r = 0, g = 0, b = 0;
+
+            if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+            else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+            else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+            else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+            else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+            else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+
+            return {
+                r: Math.round((r + m) * 255),
+                g: Math.round((g + m) * 255),
+                b: Math.round((b + m) * 255)
+            };
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
+        }
+
+        function formatColorString(h, s, l, a, formatName) {
+            const { r, g, b } = hslToRgb(h, s, l);
+
+            switch (formatName) {
+                case "RGB":
+                    return a < 1 ? `rgba(${r}, ${g}, ${b}, ${a})` : `rgb(${r}, ${g}, ${b})`;
+                case "HSL":
+                    return a < 1 
+                        ? `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${a})` 
+                        : `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+                case "HWB":
+                    const w = Math.round((1 - s / 100) * (l / 100) * 100);
+                    const bk = Math.round((1 - l / 100) * 100);
+                    return `hwb(${Math.round(h)}deg ${w}% ${bk}%)`;
+                case "LCH":
+                    return `lch(${Math.round(l)}% ${Math.round(s * 0.8)} ${Math.round(h)})`;
+                case "OKLCH":
+                    return `oklch(${(l / 100).toFixed(2)} ${(s / 250).toFixed(2)} ${Math.round(h)})`;
+                case "HEX":
+                default:
+                    return rgbToHex(r, g, b);
+            }
+        }
+
+        function randomizeAndGenerate() {
+            currentH = Math.floor(Math.random() * 360);
+            currentS = Math.floor(Math.random() * 50) + 40;
+            currentL = Math.floor(Math.random() * 50) + 30;
+            currentA = 1;
+
+            hueSlider.value = currentH;
+            alphaSlider.value = currentA;
+            spectrumBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
+
+            generatePalette();
+        }
+
+        function generatePalette() {
+            const count = Math.min(Math.max(Number(colorCountInput.value || 1), 1), 10);
+
+            paletteContainer.innerHTML = "";
+
+            const baseRgb = hslToRgb(currentH, currentS, currentL);
+            const baseCssColor = `rgba(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}, ${currentA})`;
+
+            // 피커 포맷 및 값 업데이트
+            formatValueInput.value = formatColorString(currentH, currentS, currentL, currentA, currentFormat);
+            formatLabelSub.textContent = currentFormat;
+
+            document.documentElement.style.setProperty("--bg-color", baseCssColor);
+            previewOrb.style.background = baseCssColor;
+            pickerTrigger.style.background = baseCssColor;
+            currentColorCircle.style.background = baseCssColor;
+
+            alphaSlider.style.background = `linear-gradient(to right, transparent, rgb(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}))`;
+
+            for (let i = 0; i < count; i++) {
+                const center = (count - 1) / 2;
+                const hueShift = (i - center) * 14;
+                const lightShift = (center - i) * 3;
+
+                const nextHue = (currentH + hueShift + 360) % 360;
+                const nextSaturation = Math.min(Math.max(currentS + 4, 30), 95);
+                const nextLightness = Math.min(Math.max(currentL + lightShift, 20), 85);
+
+                const formattedString = formatColorString(nextHue, nextSaturation, nextLightness, currentA, currentFormat);
+                const { r, g, b } = hslToRgb(nextHue, nextSaturation, nextLightness);
+                const swatchBg = `rgba(${r}, ${g}, ${b}, ${currentA})`;
+
+                const card = document.createElement("div");
+                card.className = "color-card";
+
+                card.innerHTML = `
+                    <div class="swatch" style="background: ${swatchBg};"></div>
+                    <div class="color-info">
+                        <span class="tone-name">Tone ${i + 1}</span>
+                        <span class="hex-label">${formattedString}</span>
+                    </div>
+                `;
+
+                card.addEventListener("click", () => copyToClipboard(formattedString));
+                paletteContainer.appendChild(card);
+            }
+        }
+
+        function copyToClipboard(value) {
+            navigator.clipboard.writeText(value).then(() => {
+                const toast = document.getElementById("toast");
+                toast.textContent = `${value} 복사되었습니다 🎉`;
+                toast.classList.add("show");
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 1800);
+            });
+        }
+
+        // 초기화
+        spectrumBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
+        generatePalette();
+    </script>
+</body>
+</html>
