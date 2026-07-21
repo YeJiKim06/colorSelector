@@ -7,7 +7,7 @@
 
     <style>
         :root {
-            --bg-color: #6366f1;
+            --bg-color: #450a0a;
             --text-color: #ffffff;
             --card-bg: rgba(255, 255, 255, 0.88);
             --card-border: rgba(255, 255, 255, 0.5);
@@ -112,7 +112,7 @@
 
         .controls {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
+            grid-template-columns: 1fr 1fr auto;
             gap: 12px;
             margin-bottom: 26px;
             padding: 14px;
@@ -125,7 +125,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 12px;
             min-height: 58px;
             padding: 10px 14px;
             border-radius: 18px;
@@ -135,50 +135,38 @@
         }
 
         .input-group label {
-            font-size: 0.82rem;
+            font-size: 0.84rem;
             font-weight: 800;
             color: #475569;
             white-space: nowrap;
         }
 
-        select {
-            width: 100%;
-            border: 0;
-            outline: 0;
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 10px 8px;
-            font-size: 0.88rem;
-            font-weight: 800;
-            color: #111827;
-            cursor: pointer;
-        }
-
-        /* 개발자 도구 스타일 Color Picker UI */
         .color-picker-trigger {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
             border: 2px solid #ffffff;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
             cursor: pointer;
             background: var(--bg-color);
         }
 
+        /* 크롬 개발자 도구 Dark Theme 스타일 피커 Popover */
         .dev-picker-popover {
             position: absolute;
             top: 68px;
             left: 0;
             z-index: 50;
-            width: 240px;
-            padding: 14px;
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
-            border: 1px solid #e2e8f0;
+            width: 260px;
+            padding: 12px;
+            background: #242424;
+            border-radius: 16px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+            border: 1px solid #383838;
             display: none;
             flex-direction: column;
             gap: 12px;
+            color: #d1d5db;
         }
 
         .dev-picker-popover.active {
@@ -188,37 +176,53 @@
         .spectrum-box {
             position: relative;
             width: 100%;
-            height: 130px;
-            border-radius: 12px;
+            height: 140px;
+            border-radius: 8px;
             background: linear-gradient(to top, #000, transparent),
                         linear-gradient(to right, #fff, rgba(255,0,0,0));
-            background-color: red;
+            background-color: #ff0000;
             cursor: crosshair;
             overflow: hidden;
         }
 
         .spectrum-cursor {
             position: absolute;
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border: 2px solid #ffffff;
             border-radius: 50%;
-            box-shadow: 0 0 2px rgba(0,0,0,0.8);
+            box-shadow: 0 0 3px rgba(0,0,0,0.8);
             transform: translate(-50%, -50%);
             pointer-events: none;
         }
 
-        .slider-container {
+        .sliders-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-color-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            background: var(--bg-color);
+        }
+
+        .sliders-column {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            flex: 1;
         }
 
         .picker-slider {
             -webkit-appearance: none;
             width: 100%;
-            height: 10px;
-            border-radius: 5px;
+            height: 8px;
+            border-radius: 4px;
             outline: none;
         }
 
@@ -232,24 +236,75 @@
 
         .picker-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: #ffffff;
-            border: 1px solid rgba(0,0,0,0.3);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
             cursor: pointer;
         }
 
+        /* 피커 내 포맷 표시 및 변환 컨트롤 */
+        .format-controller-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #1a1a1a;
+            border: 1px solid #3d3d3d;
+            border-radius: 8px;
+            padding: 4px 8px;
+        }
+
+        .format-value-input {
+            width: 100%;
+            background: transparent;
+            border: 0;
+            outline: 0;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            text-align: center;
+        }
+
+        .format-switch-btn {
+            background: transparent;
+            border: 0;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 2px 4px;
+            min-height: auto;
+            box-shadow: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .format-switch-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .format-label-sub {
+            text-align: center;
+            font-size: 0.68rem;
+            color: #6b7280;
+            font-weight: 800;
+            margin-top: -6px;
+            letter-spacing: 0.05em;
+        }
+
         input[type="number"] {
-            width: 50px;
+            width: 58px;
             border: 0;
             outline: 0;
             background: #f1f5f9;
             border-radius: 12px;
-            padding: 10px 4px;
+            padding: 10px 6px;
             text-align: center;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 900;
             color: #111827;
         }
@@ -298,15 +353,13 @@
             border-color: #6366f1;
         }
 
-        /* 또렷하게 개선된 색상칩 테두리 스타일 */
+        /* 또렷한 선명도를 보장하는 색상칩 테두리 */
         .swatch {
             height: 110px;
             border-radius: 16px;
             margin-bottom: 12px;
             border: 1px solid rgba(0, 0, 0, 0.15);
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
         }
 
         .color-info {
@@ -369,7 +422,7 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 720px) {
             .controls {
                 grid-template-columns: 1fr;
             }
@@ -392,8 +445,8 @@
                 <div class="eyebrow">SMART PALETTE</div>
                 <h1>Color Palette</h1>
                 <p class="description">
-                    기준 색상을 선택하고 출력할 색상 포맷을 지정하세요.
-                    색상 카드를 클릭하면 해당 포맷의 값이 클립보드에 복사됩니다.
+                    기준 색상을 선택하고 피커 내 화살표(↕) 버튼을 통해 포맷을 변경해 보세요.
+                    색상 카드를 클릭하면 선택된 포맷의 코드가 복사됩니다.
                 </p>
             </div>
 
@@ -405,29 +458,32 @@
                 <label>기준 색상</label>
                 <div class="color-picker-trigger" id="pickerTrigger"></div>
                 
-                <!-- DevTools 스타일 커스텀 Color Picker -->
+                <!-- 개발자 도구 스타일 피커 Popover -->
                 <div class="dev-picker-popover" id="pickerPopover">
                     <div class="spectrum-box" id="spectrumBox">
                         <div class="spectrum-cursor" id="spectrumCursor"></div>
                     </div>
-                    <div class="slider-container">
-                        <input type="range" min="0" max="360" value="240" class="picker-slider hue-slider" id="hueSlider" />
-                        <input type="range" min="0" max="1" step="0.01" value="1" class="picker-slider alpha-slider" id="alphaSlider" />
+                    
+                    <div class="sliders-row">
+                        <div class="current-color-circle" id="currentColorCircle"></div>
+                        <div class="sliders-column">
+                            <input type="range" min="0" max="360" value="0" class="picker-slider hue-slider" id="hueSlider" />
+                            <input type="range" min="0" max="1" step="0.01" value="1" class="picker-slider alpha-slider" id="alphaSlider" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="format-controller-box">
+                            <input type="text" class="format-value-input" id="formatValueInput" readonly />
+                            <button type="button" class="format-switch-btn" id="formatSwitchBtn" title="포맷 전환">↕</button>
+                        </div>
+                        <div class="format-label-sub" id="formatLabelSub">HEX</div>
                     </div>
                 </div>
             </div>
 
             <div class="input-group">
-                <label for="formatSelect">포맷</label>
-                <select id="formatSelect">
-                    <option value="hex">HEX</option>
-                    <option value="rgba">RGBA</option>
-                    <option value="hsl">HSL</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label for="colorCount">개수</label>
+                <label for="colorCount">추출 개수</label>
                 <input type="number" id="colorCount" value="5" min="1" max="10" />
             </div>
 
@@ -438,25 +494,32 @@
 
         <section class="palette" id="palette"></section>
 
-        <p class="hint">색상 카드를 클릭하면 설정한 포맷으로 클립보드에 복사됩니다.</p>
+        <p class="hint">색상 카드를 클릭하면 설정된 포맷으로 클립보드에 복사됩니다.</p>
     </main>
 
     <div id="toast">복사되었습니다 🎉</div>
 
     <script>
-        // 글로벌 색상 상태 (HSLA 기준 관리)
-        let currentH = 239;
-        let currentS = 84;
-        let currentL = 67;
+        // 지원 포맷 리스트
+        const formats = ["HEX", "RGBA", "HSL"];
+        let currentFormatIndex = 0;
+
+        // 글로벌 색상 상태 관리 (HSLA 기준)
+        let currentH = 0;
+        let currentS = 77;
+        let currentL = 16;
         let currentA = 1;
 
         const pickerTrigger = document.getElementById("pickerTrigger");
         const pickerPopover = document.getElementById("pickerPopover");
         const spectrumBox = document.getElementById("spectrumBox");
         const spectrumCursor = document.getElementById("spectrumCursor");
+        const currentColorCircle = document.getElementById("currentColorCircle");
         const hueSlider = document.getElementById("hueSlider");
         const alphaSlider = document.getElementById("alphaSlider");
-        const formatSelect = document.getElementById("formatSelect");
+        const formatValueInput = document.getElementById("formatValueInput");
+        const formatSwitchBtn = document.getElementById("formatSwitchBtn");
+        const formatLabelSub = document.getElementById("formatLabelSub");
         const colorCountInput = document.getElementById("colorCount");
         const paletteContainer = document.getElementById("palette");
         const previewOrb = document.getElementById("previewOrb");
@@ -473,7 +536,7 @@
             }
         });
 
-        // 스펙트럼 마우스 드래그 이벤트
+        // 스펙트럼 마우스 조작
         let isDraggingSpectrum = false;
 
         function updateSpectrumFromMouse(e) {
@@ -481,20 +544,20 @@
             let x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
             let y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
 
-            currentS = Math.round((x / rect.width) * 100);
+            let s = Math.round((x / rect.width) * 100);
             const v = 100 - (y / rect.height) * 100;
-            
-            // HSV to HSL 변환 계산
-            const l = (2 - currentS / 100) * (v / 100) / 2;
+
+            const l = (2 - s / 100) * (v / 100) / 2;
             if (l !== 0) {
                 if (l === 1) {
-                    currentS = 0;
+                    s = 0;
                 } else if (l < 0.5) {
-                    currentS = (currentS / 100 * v / 100) / (l * 2) * 100;
+                    s = (s / 100 * v / 100) / (l * 2) * 100;
                 } else {
-                    currentS = (currentS / 100 * v / 100) / (2 - l * 2) * 100;
+                    s = (s / 100 * v / 100) / (2 - l * 2) * 100;
                 }
             }
+            currentS = Math.round(s);
             currentL = Math.round(l * 100);
 
             spectrumCursor.style.left = `${x}px`;
@@ -516,7 +579,7 @@
             isDraggingSpectrum = false;
         });
 
-        // 색상상(Hue) 및 투명도(Alpha) 슬라이더 이벤트
+        // 슬라이더 조작
         hueSlider.addEventListener("input", (e) => {
             currentH = parseFloat(e.target.value);
             spectrumBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
@@ -528,10 +591,15 @@
             generatePalette();
         });
 
-        formatSelect.addEventListener("change", generatePalette);
+        // 피커 내부 포맷 순환 전환 버튼 (↕)
+        formatSwitchBtn.addEventListener("click", () => {
+            currentFormatIndex = (currentFormatIndex + 1) % formats.length;
+            generatePalette();
+        });
+
         colorCountInput.addEventListener("input", generatePalette);
 
-        // 색상 변환 유틸리티
+        // 색상 포맷 변환 유틸리티
         function hslToRgb(h, s, l) {
             s /= 100;
             l /= 100;
@@ -555,15 +623,15 @@
         }
 
         function rgbToHex(r, g, b) {
-            return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("").toUpperCase();
+            return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
         }
 
-        function formatColorString(h, s, l, a, format) {
+        function formatColorString(h, s, l, a, formatName) {
             const { r, g, b } = hslToRgb(h, s, l);
 
-            if (format === "rgba") {
+            if (formatName === "RGBA") {
                 return `rgba(${r}, ${g}, ${b}, ${a})`;
-            } else if (format === "hsl") {
+            } else if (formatName === "HSL") {
                 return a < 1 
                     ? `hsla(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%, ${a})` 
                     : `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
@@ -574,8 +642,8 @@
 
         function randomizeAndGenerate() {
             currentH = Math.floor(Math.random() * 360);
-            currentS = Math.floor(Math.random() * 40) + 50;
-            currentL = Math.floor(Math.random() * 40) + 40;
+            currentS = Math.floor(Math.random() * 50) + 40;
+            currentL = Math.floor(Math.random() * 50) + 30;
             currentA = 1;
 
             hueSlider.value = currentH;
@@ -587,18 +655,23 @@
 
         function generatePalette() {
             const count = Math.min(Math.max(Number(colorCountInput.value || 1), 1), 10);
-            const format = formatSelect.value;
+            const currentFormat = formats[currentFormatIndex];
 
             paletteContainer.innerHTML = "";
 
             const baseRgb = hslToRgb(currentH, currentS, currentL);
             const baseCssColor = `rgba(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}, ${currentA})`;
 
+            // 피커 내부 포맷 UI 업데이트
+            formatValueInput.value = formatColorString(currentH, currentS, currentL, currentA, currentFormat);
+            formatLabelSub.textContent = currentFormat;
+
             document.documentElement.style.setProperty("--bg-color", baseCssColor);
             previewOrb.style.background = baseCssColor;
             pickerTrigger.style.background = baseCssColor;
+            currentColorCircle.style.background = baseCssColor;
 
-            // Alpha 슬라이더 배경색을 현재 색상에 동기화
+            // 슬라이더 투명도 트랙 색상 맞춤
             alphaSlider.style.background = `linear-gradient(to right, transparent, rgb(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}))`;
 
             for (let i = 0; i < count; i++) {
@@ -610,7 +683,7 @@
                 const nextSaturation = Math.min(Math.max(currentS + 4, 30), 95);
                 const nextLightness = Math.min(Math.max(currentL + lightShift, 20), 85);
 
-                const colorString = formatColorString(nextHue, nextSaturation, nextLightness, currentA, format);
+                const formattedString = formatColorString(nextHue, nextSaturation, nextLightness, currentA, currentFormat);
                 const { r, g, b } = hslToRgb(nextHue, nextSaturation, nextLightness);
                 const swatchBg = `rgba(${r}, ${g}, ${b}, ${currentA})`;
 
@@ -621,11 +694,11 @@
                     <div class="swatch" style="background: ${swatchBg};"></div>
                     <div class="color-info">
                         <span class="tone-name">Tone ${i + 1}</span>
-                        <span class="hex-label">${colorString}</span>
+                        <span class="hex-label">${formattedString}</span>
                     </div>
                 `;
 
-                card.addEventListener("click", () => copyToClipboard(colorString));
+                card.addEventListener("click", () => copyToClipboard(formattedString));
                 paletteContainer.appendChild(card);
             }
         }
@@ -642,7 +715,7 @@
             });
         }
 
-        // 초기 생성 실행
+        // 초기화
         spectrumBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
         generatePalette();
     </script>
