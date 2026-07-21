@@ -13,50 +13,170 @@
             <div class="eyebrow">GRADATION PALETTE</div>
             <h1>Gradation Palette</h1>
             <p class="description">
-                시작 색상과 끝 색상을 선택하여 자연스러운 그라데이션 및 스톱 컬러를 생성합니다.
+                선형, 원형, 원뿔형, 스트라이프, 다중 오버레이 등 다양한 그라데이션 스타일을 제작해보세요.
             </p>
         </section>
 
+        <!-- 전체 그라데이션 미리보기 바 -->
         <div class="main-gradient-preview" id="mainGradientPreview" title="CSS Gradient 코드 복사"></div>
 
-        <section class="controls">
+        <section class="controls-grid">
+            <!-- 그라데이션 모드 선택 -->
+            <div class="input-group full-width">
+                <label for="gradientType">그라데이션 유형</label>
+                <select id="gradientType">
+                    <option value="linear">1. 선형 (Linear)</option>
+                    <option value="radial">2. 원형 (Radial)</option>
+                    <option value="conic">3. 원뿔형 (Conic)</option>
+                    <option value="repeating">4. 반복 스트라이프 (Repeating)</option>
+                    <option value="overlay">5. 다중 오버레이 (Overlay)</option>
+                </select>
+            </div>
+
+            <!-- 색상 1 / 색상 2 -->
             <div class="input-group">
-                <label for="startColor">시작 색상</label>
-                <input type="color" id="startColor" value="#6366f1" />
+                <label for="color1">색상 1</label>
+                <div class="input-controls-inline">
+                    <input type="color" id="color1" value="#6366f1" />
+                    <input type="number" id="pos1" value="0" min="0" max="100" />
+                    <span class="unit-label">%</span>
+                </div>
             </div>
 
             <div class="input-group">
-                <label for="endColor">끝 색상</label>
-                <input type="color" id="endColor" value="#a855f7" />
+                <label for="color2">색상 2</label>
+                <div class="input-controls-inline">
+                    <input type="color" id="color2" value="#a855f7" />
+                    <input type="number" id="pos2" value="100" min="0" max="100" />
+                    <span class="unit-label">%</span>
+                </div>
             </div>
 
-            <div class="input-group">
-                <label for="stepCount">단계</label>
-                <input type="number" id="stepCount" value="5" min="2" max="10" />
+            <!-- 동적 옵션: 선형 각도 설정 -->
+            <div class="input-group full-width" id="linearOpt">
+                <label for="angleInput">각도 / 방향</label>
+                <div class="input-controls-inline">
+                    <input type="range" id="angleSlider" min="0" max="360" value="135" />
+                    <input type="number" id="angleInput" value="135" min="0" max="360" />
+                    <span class="unit-label">°</span>
+                </div>
             </div>
 
-            <button type="button" onclick="randomizeGradation()">
+            <!-- 동적 옵션: 원형 옵션 (형태 / 위치) -->
+            <div class="input-group full-width" id="radialOpt" style="display: none;">
+                <label>원형 형태 및 위치</label>
+                <div class="input-controls-inline">
+                    <select id="radialShape">
+                        <option value="circle">정원 (Circle)</option>
+                        <option value="ellipse">타원 (Ellipse)</option>
+                    </select>
+                    <select id="radialPosition">
+                        <option value="center">중앙 (Center)</option>
+                        <option value="top left">좌측 상단 (Top Left)</option>
+                        <option value="bottom right">우측 하단 (Bottom Right)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 동적 옵션: 원뿔 회전 각도 -->
+            <div class="input-group full-width" id="conicOpt" style="display: none;">
+                <label for="conicAngle">시작 각도</label>
+                <div class="input-controls-inline">
+                    <input type="range" id="conicSlider" min="0" max="360" value="45" />
+                    <input type="number" id="conicAngle" value="45" min="0" max="360" />
+                    <span class="unit-label">°</span>
+                </div>
+            </div>
+
+            <!-- 동적 옵션: 스트라이프 폭 -->
+            <div class="input-group full-width" id="repeatingOpt" style="display: none;">
+                <label for="stripeWidth">줄무늬 너비</label>
+                <div class="input-controls-inline">
+                    <input type="number" id="stripeWidth" value="20" min="5" max="100" />
+                    <span class="unit-label">px</span>
+                </div>
+            </div>
+
+            <!-- 동적 옵션: 다중 오버레이 배경색 -->
+            <div class="input-group full-width" id="overlayOpt" style="display: none;">
+                <label for="overlayBg">바탕 베이스 색상</label>
+                <div class="input-controls-inline">
+                    <input type="color" id="overlayBg" value="#0f172a" />
+                </div>
+            </div>
+
+            <!-- 팔레트 추출 개수 -->
+            <div class="input-group full-width">
+                <label for="stepCount">추출 단계 수</label>
+                <div class="input-controls-inline">
+                    <input type="number" id="stepCount" value="5" min="2" max="10" />
+                    <span class="unit-label">단계</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="action-row">
+            <button type="button" class="btn-generate" onclick="randomizeGradation()">
                 랜덤 생성
             </button>
-        </section>
+        </div>
 
         <section class="palette" id="palette"></section>
 
-        <p class="hint">상단 바를 클릭하면 CSS `linear-gradient` 코드가 복사됩니다.</p>
+        <p class="hint">상단 미리보기 바를 클릭하면 적용된 CSS Gradient 코드가 클립보드에 복사됩니다.</p>
     </main>
 
     <div id="toast">복사되었습니다 🎉</div>
 
     <script>
-        const startColorInput = document.getElementById("startColor");
-        const endColorInput = document.getElementById("endColor");
+        const gradientTypeSelect = document.getElementById("gradientType");
+        const color1Input = document.getElementById("color1");
+        const pos1Input = document.getElementById("pos1");
+        const color2Input = document.getElementById("color2");
+        const pos2Input = document.getElementById("pos2");
+
+        const linearOpt = document.getElementById("linearOpt");
+        const angleSlider = document.getElementById("angleSlider");
+        const angleInput = document.getElementById("angleInput");
+
+        const radialOpt = document.getElementById("radialOpt");
+        const radialShape = document.getElementById("radialShape");
+        const radialPosition = document.getElementById("radialPosition");
+
+        const conicOpt = document.getElementById("conicOpt");
+        const conicSlider = document.getElementById("conicSlider");
+        const conicAngle = document.getElementById("conicAngle");
+
+        const repeatingOpt = document.getElementById("repeatingOpt");
+        const stripeWidthInput = document.getElementById("stripeWidth");
+
+        const overlayOpt = document.getElementById("overlayOpt");
+        const overlayBgInput = document.getElementById("overlayBg");
+
         const stepCountInput = document.getElementById("stepCount");
         const paletteContainer = document.getElementById("palette");
         const mainGradientPreview = document.getElementById("mainGradientPreview");
 
-        startColorInput.addEventListener("input", generateGradation);
-        endColorInput.addEventListener("input", generateGradation);
-        stepCountInput.addEventListener("input", generateGradation);
+        // 각도 입력 연동
+        angleSlider.addEventListener("input", (e) => { angleInput.value = e.target.value; generateGradation(); });
+        angleInput.addEventListener("input", (e) => { angleSlider.value = e.target.value; generateGradation(); });
+        conicSlider.addEventListener("input", (e) => { conicAngle.value = e.target.value; generateGradation(); });
+        conicAngle.addEventListener("input", (e) => { conicSlider.value = e.target.value; generateGradation(); });
+
+        // 유형 변경 시 UI 옵션 가시성 토글
+        gradientTypeSelect.addEventListener("change", () => {
+            const type = gradientTypeSelect.value;
+            linearOpt.style.display = type === "linear" || type === "repeating" ? "flex" : "none";
+            radialOpt.style.display = type === "radial" ? "flex" : "none";
+            conicOpt.style.display = type === "conic" ? "flex" : "none";
+            repeatingOpt.style.display = type === "repeating" ? "flex" : "none";
+            overlayOpt.style.display = type === "overlay" ? "flex" : "none";
+            generateGradation();
+        });
+
+        [color1Input, pos1Input, color2Input, pos2Input, radialShape, radialPosition, stripeWidthInput, overlayBgInput, stepCountInput].forEach(elem => {
+            elem.addEventListener("input", generateGradation);
+        });
 
         function hexToRgb(hex) {
             const cleanHex = hex.replace("#", "");
@@ -71,6 +191,11 @@
             return "#" + [r, g, b].map(x => Math.round(x).toString(16).padStart(2, "0")).join("").toUpperCase();
         }
 
+        function hexToRgbaStr(hex, alpha) {
+            const { r, g, b } = hexToRgb(hex);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
         function interpolateColor(color1, color2, factor) {
             const rgb1 = hexToRgb(color1);
             const rgb2 = hexToRgb(color2);
@@ -83,29 +208,52 @@
         }
 
         function randomizeGradation() {
-            const randomHex1 = "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
-            const randomHex2 = "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
-
-            startColorInput.value = randomHex1;
-            endColorInput.value = randomHex2;
-
+            color1Input.value = "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+            color2Input.value = "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
             generateGradation();
         }
 
         function generateGradation() {
-            const c1 = startColorInput.value;
-            const c2 = endColorInput.value;
+            const type = gradientTypeSelect.value;
+            const c1 = color1Input.value;
+            const p1 = Math.min(Math.max(Number(pos1Input.value || 0), 0), 100);
+            const c2 = color2Input.value;
+            const p2 = Math.min(Math.max(Number(pos2Input.value || 100), 0), 100);
             const steps = Math.min(Math.max(Number(stepCountInput.value || 2), 2), 10);
 
-            const cssGradient = `linear-gradient(135deg, ${c1}, ${c2})`;
-            document.documentElement.style.setProperty("--color-start", c1);
-            document.documentElement.style.setProperty("--color-end", c2);
+            let cssGradient = "";
+
+            switch (type) {
+                case "radial":
+                    cssGradient = `radial-gradient(${radialShape.value} at ${radialPosition.value}, ${c1} ${p1}%, ${c2} ${p2}%)`;
+                    break;
+                case "conic":
+                    cssGradient = `conic-gradient(from ${conicAngle.value}deg, ${c1} ${p1}%, ${c2} ${p2}%)`;
+                    break;
+                case "repeating":
+                    const width = Number(stripeWidthInput.value || 20);
+                    cssGradient = `repeating-linear-gradient(${angleInput.value}deg, ${c1}, ${c1} ${width}px, ${c2} ${width}px, ${c2} ${width * 2}px)`;
+                    break;
+                case "overlay":
+                    const bg = overlayBgInput.value;
+                    const rgba1 = hexToRgbaStr(c1, 0.5);
+                    const rgba2 = hexToRgbaStr(c2, 0.5);
+                    cssGradient = `${bg} radial-gradient(circle at 20% 20%, ${rgba1} 0%, transparent 50%), radial-gradient(circle at 80% 80%, ${rgba2} 0%, transparent 50%)`;
+                    break;
+                case "linear":
+                default:
+                    cssGradient = `linear-gradient(${angleInput.value}deg, ${c1} ${p1}%, ${c2} ${p2}%)`;
+                    break;
+            }
+
+            document.documentElement.style.setProperty("--gradient-bg", cssGradient);
 
             paletteContainer.innerHTML = "";
 
             for (let i = 0; i < steps; i++) {
                 const factor = i / (steps - 1);
                 const hex = interpolateColor(c1, c2, factor);
+                const currentPosPercentage = Math.round(p1 + factor * (p2 - p1));
 
                 const card = document.createElement("div");
                 card.className = "color-card";
@@ -113,7 +261,7 @@
                 card.innerHTML = `
                     <div class="swatch" style="background: ${hex};"></div>
                     <div class="color-info">
-                        <span class="tone-name">Step ${i + 1} (${Math.round(factor * 100)}%)</span>
+                        <span class="tone-name">Step ${i + 1} (${currentPosPercentage}%)</span>
                         <span class="hex-label">${hex}</span>
                     </div>
                 `;
