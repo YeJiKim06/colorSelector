@@ -1,1 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Gradation Palette Generator</title>
+    <link rel="stylesheet" href="css/gradation_palette.css" />
+</head>
 
+<body>
+    <main class="container">
+        <section class="header">
+            <div class="eyebrow">GRADATION PALETTE</div>
+            <h1>Gradation Palette</h1>
+            <p class="description">
+                시작 색상과 끝 색상을 선택하여 자연스러운 그라데이션 및 스톱 컬러를 생성합니다.
+            </p>
+        </section>
+
+        <div class="main-gradient-preview" id="mainGradientPreview" title="CSS Gradient 코드 복사"></div>
+
+        <section class="controls">
+            <div class="input-group">
+                <label for="startColor">시작 색상</label>
+                <input type="color" id="startColor" value="#6366f1" />
+            </div>
+
+            <div class="input-group">
+                <label for="endColor">끝 색상</label>
+                <input type="color" id="endColor" value="#a855f7" />
+            </div>
+
+            <div class="input-group">
+                <label for="stepCount">단계</label>
+                <input type="number" id="stepCount" value="5" min="2" max="10" />
+            </div>
+
+            <button type="button" onclick="randomizeGradation()">
+                랜덤 생성
+            </button>
+        </section>
+
+        <section class="palette" id="palette"></section>
+
+        <p class="hint">상단 바를 클릭하면 CSS `linear-gradient` 코드가 복사됩니다.</p>
+    </main>
+
+    <div id="toast">복사되었습니다 🎉</div>
+
+    <script>
+        const startColorInput = document.getElementById("startColor");
+        const endColorInput = document.getElementById("endColor");
+        const stepCountInput = document.getElementById("stepCount");
+        const paletteContainer = document.getElementById("palette");
+        const mainGradientPreview = document.getElementById("mainGradientPreview");
+
+        startColorInput.addEventListener("input", generateGradation);
+        endColorInput.addEventListener("input", generateGradation);
+        stepCountInput.addEventListener("input", generateGradation);
+
+        function hexToRgb(hex) {
+            const cleanHex = hex.replace("#", "");
+            return {
+                r: parseInt(cleanHex.substring(0, 2), 16),
+                g: parseInt(cleanHex.substring(2, 4), 16),
+                b: parseInt(cleanHex.substring(4, 6), 16)
+            };
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + [r, g, b].map(x => Math.round(x).toString(16).padStart(2, "0")).join("").toUpperCase();
+        }
+
+        function interpolateColor(color1, color2, factor) {
+            const rgb1 = hexToRgb(color1);
+            const rgb2 = hexToRgb(color2);
+
+            const r = rgb1.r + factor * (rgb2.r - rgb1.r);
+            const g = rgb1.g + factor * (rgb2.g - rgb1.g);
+            const b = rgb1.b + factor * (rgb2.b - rgb1.b);
+
+            return rgbToHex(r, g, b);
+        }
+
+        function randomizeGradation() {
+            const randomHex1 = "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+            const randomHex2 = "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+
+            startColorInput.value = randomHex1;
+            endColorInput.value = randomHex2;
+
+            generateGradation();
+        }
+
+        function generateGradation() {
+            const c1 = startColorInput.value;
+            const c2 = endColorInput.value;
+            const steps = Math.min(Math.max(Number(stepCountInput.value || 2), 2), 10);
+
+            const cssGradient = `linear-gradient(135deg, ${c1}, ${c2})`;
+            document.documentElement.style.setProperty("--color-start", c1);
+            document.documentElement.style.setProperty("--color-end", c2);
+
+            paletteContainer.innerHTML = "";
+
+            for (let i = 0; i < steps; i++) {
+                const factor = i / (steps - 1);
+                const hex = interpolateColor(c1, c2, factor);
+
+                const card = document.createElement("div");
+                card.className = "color-card";
+
+                card.innerHTML = `
+                    <div class="swatch" style="background: ${hex};"></div>
+                    <div class="color-info">
+                        <span class="tone-name">Step ${i + 1} (${Math.round(factor * 100)}%)</span>
+                        <span class="hex-label">${hex}</span>
+                    </div>
+                `;
+
+                card.addEventListener("click", () => copyToClipboard(hex));
+                paletteContainer.appendChild(card);
+            }
+
+            mainGradientPreview.onclick = () => copyToClipboard(`background: ${cssGradient};`);
+        }
+
+        function copyToClipboard(value) {
+            navigator.clipboard.writeText(value).then(() => {
+                const toast = document.getElementById("toast");
+                toast.textContent = `${value} 복사되었습니다 🎉`;
+                toast.classList.add("show");
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 1800);
+            });
+        }
+
+        generateGradation();
+    </script>
+</body>
+</html>
