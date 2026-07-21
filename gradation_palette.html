@@ -157,13 +157,11 @@
         const paletteContainer = document.getElementById("palette");
         const mainGradientPreview = document.getElementById("mainGradientPreview");
 
-        // 각도 입력 연동
         angleSlider.addEventListener("input", (e) => { angleInput.value = e.target.value; generateGradation(); });
         angleInput.addEventListener("input", (e) => { angleSlider.value = e.target.value; generateGradation(); });
         conicSlider.addEventListener("input", (e) => { conicAngle.value = e.target.value; generateGradation(); });
         conicAngle.addEventListener("input", (e) => { conicSlider.value = e.target.value; generateGradation(); });
 
-        // 유형 변경 시 UI 옵션 가시성 토글
         gradientTypeSelect.addEventListener("change", () => {
             const type = gradientTypeSelect.value;
             linearOpt.style.display = type === "linear" || type === "repeating" ? "flex" : "none";
@@ -236,9 +234,9 @@
                     break;
                 case "overlay":
                     const bg = overlayBgInput.value;
-                    const rgba1 = hexToRgbaStr(c1, 0.5);
-                    const rgba2 = hexToRgbaStr(c2, 0.5);
-                    cssGradient = `${bg} radial-gradient(circle at 20% 20%, ${rgba1} 0%, transparent 50%), radial-gradient(circle at 80% 80%, ${rgba2} 0%, transparent 50%)`;
+                    const rgba1 = hexToRgbaStr(c1, 0.4);
+                    const rgba2 = hexToRgbaStr(c2, 0.4);
+                    cssGradient = `radial-gradient(circle at 20% 20%, ${rgba1} 0%, transparent 40%), radial-gradient(circle at 80% 80%, ${rgba2} 0%, transparent 40%), ${bg}`;
                     break;
                 case "linear":
                 default:
