@@ -4,492 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart Color Palette Generator</title>
-
-    <style>
-        :root {
-            --bg-color: #450a0a;
-            --text-color: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.88);
-            --card-border: rgba(255, 255, 255, 0.5);
-            --shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            min-height: 100vh;
-            margin: 0;
-            font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: var(--text-color);
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.32), transparent 32%),
-                radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.22), transparent 36%),
-                linear-gradient(135deg, var(--bg-color), #111827);
-            transition: background 0.45s ease, color 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 18px;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-            background-size: 44px 44px;
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
-            pointer-events: none;
-        }
-
-        .container {
-            position: relative;
-            width: min(100%, 800px);
-            padding: 30px;
-            border-radius: 34px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(22px);
-            color: #111827;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            align-items: flex-start;
-            margin-bottom: 26px;
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 12px;
-            border-radius: 999px;
-            background: rgba(99, 102, 241, 0.1);
-            color: #4f46e5;
-            font-size: 0.78rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: clamp(2rem, 5vw, 3.2rem);
-            line-height: 1.05;
-            letter-spacing: -0.06em;
-        }
-
-        .description {
-            margin: 12px 0 0;
-            color: #64748b;
-            font-size: 0.95rem;
-            line-height: 1.55;
-        }
-
-        .preview-orb {
-            flex: 0 0 auto;
-            width: 96px;
-            height: 96px;
-            border-radius: 30px;
-            background: var(--bg-color);
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24);
-            border: 2px solid #ffffff;
-            transform: rotate(6deg);
-            transition: background 0.35s ease, transform 0.25s ease;
-        }
-
-        .preview-orb:hover {
-            transform: rotate(0deg) scale(1.04);
-        }
-
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 12px;
-            margin-bottom: 26px;
-            padding: 14px;
-            border-radius: 24px;
-            background: rgba(248, 250, 252, 0.86);
-            border: 1px solid rgba(226, 232, 240, 0.9);
-        }
-
-        .input-group {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            min-height: 58px;
-            padding: 10px 14px;
-            border-radius: 18px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            position: relative;
-        }
-
-        .input-group label {
-            font-size: 0.84rem;
-            font-weight: 800;
-            color: #475569;
-            white-space: nowrap;
-        }
-
-        .color-picker-trigger {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
-            cursor: pointer;
-            background: var(--bg-color);
-        }
-
-        /* 개발자 도구 메인 피커 Popover */
-        .dev-picker-popover {
-            position: absolute;
-            top: 68px;
-            left: 0;
-            z-index: 50;
-            width: 270px;
-            padding: 12px;
-            background: #242424;
-            border-radius: 16px;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
-            border: 1px solid #383838;
-            display: none;
-            flex-direction: column;
-            gap: 12px;
-            color: #d1d5db;
-        }
-
-        .dev-picker-popover.active {
-            display: flex;
-        }
-
-        .spectrum-box {
-            position: relative;
-            width: 100%;
-            height: 140px;
-            border-radius: 8px;
-            background: linear-gradient(to top, #000, transparent),
-                        linear-gradient(to right, #fff, rgba(255,0,0,0));
-            background-color: #ff0000;
-            cursor: crosshair;
-            overflow: hidden;
-        }
-
-        .spectrum-cursor {
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 0 3px rgba(0,0,0,0.8);
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-
-        .sliders-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .current-color-circle {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            flex-shrink: 0;
-            background: var(--bg-color);
-        }
-
-        .sliders-column {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .picker-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            outline: none;
-        }
-
-        .hue-slider {
-            background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
-        }
-
-        .alpha-slider {
-            background: linear-gradient(to right, transparent, #ff0000);
-        }
-
-        .picker-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #ffffff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-            cursor: pointer;
-        }
-
-        /* 피커 하단 포맷 표시 컨트롤 영역 */
-        .format-control-wrapper {
-            position: relative;
-        }
-
-        .format-controller-box {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #1a1a1a;
-            border: 1px solid #3d3d3d;
-            border-radius: 8px;
-            padding: 4px 8px;
-        }
-
-        .format-value-input {
-            width: 100%;
-            background: transparent;
-            border: 0;
-            outline: 0;
-            color: #ffffff;
-            font-size: 0.82rem;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            text-align: center;
-        }
-
-        .format-switch-btn {
-            background: transparent;
-            border: 0;
-            color: #9ca3af;
-            cursor: pointer;
-            padding: 2px 4px;
-            min-height: auto;
-            box-shadow: none;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-        }
-
-        .format-switch-btn:hover {
-            background: rgba(255,255,255,0.15);
-            color: #ffffff;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .format-label-sub {
-            text-align: center;
-            font-size: 0.68rem;
-            color: #6b7280;
-            font-weight: 800;
-            margin-top: 4px;
-            letter-spacing: 0.05em;
-        }
-
-        /* 개발자 도구 스타일 포맷 선택 드롭다운 팝업 메뉴 */
-        .format-dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 6px;
-            width: 180px;
-            background: #1e1e1e;
-            border: 1px solid #3d3d3d;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            display: none;
-            flex-direction: column;
-            padding: 6px 0;
-            z-index: 60;
-        }
-
-        .format-dropdown-menu.active {
-            display: flex;
-        }
-
-        .format-option-item {
-            padding: 8px 12px;
-            font-size: 0.78rem;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            color: #d1d5db;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.15s ease;
-        }
-
-        .format-option-item:hover {
-            background: #2d2d2d;
-            color: #ffffff;
-        }
-
-        .format-option-item.selected {
-            color: #3b82f6;
-            font-weight: bold;
-        }
-
-        input[type="number"] {
-            width: 58px;
-            border: 0;
-            outline: 0;
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 10px 6px;
-            text-align: center;
-            font-size: 1rem;
-            font-weight: 900;
-            color: #111827;
-        }
-
-        button {
-            min-height: 58px;
-            padding: 0 20px;
-            border: 0;
-            border-radius: 18px;
-            background: #111827;
-            color: #ffffff;
-            font-size: 0.92rem;
-            font-weight: 850;
-            cursor: pointer;
-            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.22);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-            white-space: nowrap;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            background: #020617;
-            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.28);
-        }
-
-        .palette {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 14px;
-        }
-
-        .color-card {
-            position: relative;
-            overflow: hidden;
-            padding: 12px;
-            border-radius: 24px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-        }
-
-        .color-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
-            border-color: #6366f1;
-        }
-
-        .swatch {
-            height: 110px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(0, 0, 0, 0.15);
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-        }
-
-        .color-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .tone-name {
-            font-size: 0.74rem;
-            font-weight: 900;
-            color: #64748b;
-        }
-
-        .hex-label {
-            padding: 6px 8px;
-            border-radius: 10px;
-            background: #f1f5f9;
-            color: #0f172a;
-            font-size: 0.7rem;
-            font-weight: 800;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            letter-spacing: -0.02em;
-            word-break: break-all;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-        }
-
-        .hint {
-            margin-top: 18px;
-            color: #64748b;
-            font-size: 0.84rem;
-            text-align: center;
-        }
-
-        #toast {
-            position: fixed;
-            left: 50%;
-            bottom: 34px;
-            transform: translateX(-50%) translateY(16px);
-            min-width: 210px;
-            padding: 14px 18px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.92);
-            color: #ffffff;
-            text-align: center;
-            font-size: 0.9rem;
-            font-weight: 800;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.28);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
-            backdrop-filter: blur(12px);
-            z-index: 100;
-        }
-
-        #toast.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        @media (max-width: 720px) {
-            .controls {
-                grid-template-columns: 1fr;
-            }
-            .header {
-                flex-direction: column;
-            }
-            .preview-orb {
-                width: 100%;
-                height: 80px;
-                transform: none;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/color_palette.css" />
 </head>
 
 <body>
     <main class="container">
         <section class="header">
             <div>
-                <div class="eyebrow">SMART PALETTE</div>
+                <div class="eyebrow">COLOR PALETTE</div>
                 <h1>Color Palette</h1>
                 <p class="description">
                     기준 색상을 선택하고 피커 하단의 ↕ 버튼을 통해 포맷 드롭다운 메뉴를 열어보세요.
@@ -505,7 +27,6 @@
                 <label>기준 색상</label>
                 <div class="color-picker-trigger" id="pickerTrigger"></div>
                 
-                <!-- 개발자 도구 스타일 피커 Popover -->
                 <div class="dev-picker-popover" id="pickerPopover">
                     <div class="spectrum-box" id="spectrumBox">
                         <div class="spectrum-cursor" id="spectrumCursor"></div>
@@ -526,7 +47,6 @@
                         </div>
                         <div class="format-label-sub" id="formatLabelSub">HEX</div>
 
-                        <!-- 개발자 도구 스타일 포맷 드롭다운 팝업 -->
                         <div class="format-dropdown-menu" id="formatDropdownMenu">
                             <div class="format-option-item selected" data-format="HEX">HEX</div>
                             <div class="format-option-item" data-format="RGB">RGB</div>
@@ -559,7 +79,6 @@
     <script>
         let currentFormat = "HEX";
 
-        // 글로벌 색상 상태 관리 (HSLA 기준)
         let currentH = 0;
         let currentS = 77;
         let currentL = 16;
@@ -580,7 +99,6 @@
         const paletteContainer = document.getElementById("palette");
         const previewOrb = document.getElementById("previewOrb");
 
-        // 메인 피커 팝오버 토글
         pickerTrigger.addEventListener("click", (e) => {
             e.stopPropagation();
             pickerPopover.classList.toggle("active");
@@ -594,13 +112,11 @@
             }
         });
 
-        // ↕ 버튼 클릭 시 포맷 선택 드롭다운 토글
         formatSwitchBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             formatDropdownMenu.classList.toggle("active");
         });
 
-        // 드롭다운 옵션 클릭 이벤트
         document.querySelectorAll(".format-option-item").forEach(item => {
             item.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -614,7 +130,6 @@
             });
         });
 
-        // 스펙트럼 마우스 드래그 조작
         let isDraggingSpectrum = false;
 
         function updateSpectrumFromMouse(e) {
@@ -657,7 +172,6 @@
             isDraggingSpectrum = false;
         });
 
-        // 슬라이더 조작
         hueSlider.addEventListener("input", (e) => {
             currentH = parseFloat(e.target.value);
             spectrumBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
@@ -671,7 +185,6 @@
 
         colorCountInput.addEventListener("input", generatePalette);
 
-        // 다양한 색상 포맷 변환 함수
         function hslToRgb(h, s, l) {
             s /= 100;
             l /= 100;
@@ -743,7 +256,6 @@
             const baseRgb = hslToRgb(currentH, currentS, currentL);
             const baseCssColor = `rgba(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b}, ${currentA})`;
 
-            // 피커 포맷 및 값 업데이트
             formatValueInput.value = formatColorString(currentH, currentS, currentL, currentA, currentFormat);
             formatLabelSub.textContent = currentFormat;
 
@@ -795,7 +307,6 @@
             });
         }
 
-        // 초기화
         spectrumBox.style.backgroundColor = `hsl(${currentH}, 100%, 50%)`;
         generatePalette();
     </script>
